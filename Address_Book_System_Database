@@ -1,0 +1,133 @@
+1. Create Address Book Database (UC1) :
+
+CREATE DATABASE AddressBookDB;
+USE AddressBookDB;
+
+---
+
+2. Create Address Book Table (UC2) :
+
+CREATE TABLE AddressBook (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    FirstName VARCHAR(50) NOT NULL,
+    LastName VARCHAR(50) NOT NULL,
+    Address VARCHAR(255),
+    City VARCHAR(50),
+    State VARCHAR(50),
+    ZipCode VARCHAR(10),
+    PhoneNumber VARCHAR(15),
+    Email VARCHAR(100),
+    BookName VARCHAR(50), -- New field for Address Book Name
+    BookType ENUM('Family', 'Friends', 'Profession') -- New field for Address Book Type
+);
+
+---
+
+3. Insert New Contacts (UC3) :
+
+INSERT INTO AddressBook (FirstName, LastName, Address, City, State, ZipCode, PhoneNumber, Email, BookName, BookType)
+VALUES
+('John', 'Doe', '123 Main St', 'New York', 'NY', '10001', '1234567890', 'john.doe@example.com', 'Personal', 'Family'),
+('Jane', 'Smith', '456 Elm St', 'Los Angeles', 'CA', '90001', '9876543210', 'jane.smith@example.com', 'Work', 'Profession');
+
+---
+
+4. Edit Existing Contact by Name (UC4) :
+
+UPDATE AddressBook
+SET PhoneNumber = '1112223333', Email = 'new.email@example.com'
+WHERE FirstName = 'John' AND LastName = 'Doe';
+
+---
+
+5. Delete a Contact by Name (UC5) :
+
+DELETE FROM AddressBook
+WHERE FirstName = 'Jane' AND LastName = 'Smith';
+
+---
+
+6. Retrieve Contacts by City or State (UC6) :
+
+-- Retrieve all contacts from a specific city :
+SELECT * FROM AddressBook WHERE City = 'New York';
+
+-- Retrieve all contacts from a specific state :
+SELECT * FROM AddressBook WHERE State = 'NY';
+
+---
+
+7. Get the Count of Contacts by City and State (UC7) :
+
+SELECT City, State, COUNT(*) AS ContactCount
+FROM AddressBook
+GROUP BY City, State;
+
+
+---
+
+8. Retrieve Entries Sorted Alphabetically by Name for a City (UC8) :
+
+SELECT * FROM AddressBook
+WHERE City = 'New York'
+ORDER BY FirstName, LastName;
+
+---
+
+9. Add Address Book Name and Type (UC9) :
+
+ALTER TABLE AddressBook
+MODIFY COLUMN BookName VARCHAR(50) NOT NULL,
+MODIFY COLUMN BookType ENUM('Family', 'Friends', 'Profession') NOT NULL;
+
+---
+
+10. Get Count of Contacts by Type (UC10) :
+
+SELECT BookType, COUNT(*) AS ContactCount
+FROM AddressBook
+GROUP BY BookType;
+
+---
+
+11. Add Person to Multiple Types (UC11) :
+
+Since MySQL does not support direct multi-value attributes, create a junction table :
+
+CREATE TABLE AddressBookTypes (
+    ContactID INT,
+    Type ENUM('Family', 'Friends', 'Profession'),
+    FOREIGN KEY (ContactID) REFERENCES AddressBook(ID)
+);
+
+-- Add John Doe to both Family and Friends
+INSERT INTO AddressBookTypes (ContactID, Type) VALUES (1, 'Family'), (1, 'Friends');
+
+---
+
+12. ER Diagram Notes (UC12) :
+You can draw the ER Diagram with the following entities:
+- AddressBook : Represents contact details.
+- AddressBookTypes : Represents the many-to-many relationship between contacts and types.
+
+Key relationships:
+- `AddressBook(ID)` → `AddressBookTypes(ContactID)`
+
+---
+
+13. Validate Queries (UC13) :
+
+- UC6 (Retrieve Contacts by City/State):
+  SELECT * FROM AddressBook WHERE State = 'CA';
+
+- UC7 (Sorted Entries by City):
+  SELECT * FROM AddressBook WHERE City = 'Los Angeles' ORDER BY FirstName;
+
+- UC10 (Count by Type):
+  SELECT BookType, COUNT(*) AS CountByType FROM AddressBook GROUP BY BookType;
+
+- UC11 (Multiple Types):
+  SELECT AB.FirstName, AB.LastName, ABT.Type
+  FROM AddressBook AB
+  JOIN AddressBookTypes ABT ON AB.ID = ABT.ContactID;
+
